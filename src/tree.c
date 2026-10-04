@@ -3,14 +3,7 @@
 #include <string.h>   // strcmp(), strncpy()
 #include <dirent.h>   // Directory handling functions and structures
 #include <sys/stat.h> // stat() and struct stat for file metadata
-
-typedef struct Node {
-    char name[256];
-    long long size;
-    int is_dir;
-    int child_count;
-    struct Node *children;
-} Node;
+#include "tree.h"     // declarations: struct Node and function signatures
 
 // Recursively builds a tree node for the given path, including all nested children if it's a directory
 Node build_tree(const char *path, const char *name) {
@@ -80,6 +73,7 @@ void free_tree(Node *node) {
     }
     free(node->children);
 }
+
 // debig print: shoes the tree with indentation per depth level
 void print_tree(Node *node, int depth) {
     for (int i = 0; i < depth; i++) printf(" ");
@@ -90,12 +84,4 @@ void print_tree(Node *node, int depth) {
     }
 }
 
-int main(int argc, char *argv[]) {
-    const char *path = (argc > 1) ? argv[1] : ".";
 
-    Node root = build_tree(path, path);
-    print_tree(&root, 0);
-    free_tree(&root);
-
-    return 0;
-}
