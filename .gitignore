@@ -1,0 +1,15 @@
+# Compiled binaries
+*.exe
+list_dir
+get_metadata
+list_entries
+
+# Build artifacts
+*.o
+*.out
+
+# Local learning/reference code - not part of the project
+learning/
+
+# OS/editor junk
+.vscode/
