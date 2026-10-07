@@ -13,3 +13,7 @@ learning/
 
 # OS/editor junk
 .vscode/
+
+build/
+error.txt
+duview_test*
