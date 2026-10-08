@@ -1,29 +1,47 @@
 #include <stdio.h>  // printf(), snprintf()
 #include "ui.h"
+#include "terminal.h"
 
-// Clears the whole screen and moves the cursor to the top-left corner using ANSI escape codes.
-static void clear_screen(void) {
-    printf("\033[2J\033[H");
+// Moves the cursor to the top-left without blanking the screen.
+// Drawing over the old frame avoids the flicker a full clear causes.
+static void cursor_home(void) {
+    printf("\033[H");
 }
 
-void render(Node *node) {
-    clear_screen();
+void render(Node *node, int selected, int *scroll) {
+    int visible = get_terminal_rows() - 5;
+    if (visible < 1) visible = 1;
 
-    // Header: current folder and its total size
-    printf("%s  (%lld bytes)\n", node->name, node->size);
-    printf("------------------------------------------------------------\n");
+    if (selected < *scroll) *scroll = selected;
+    if (selected >= *scroll + visible) *scroll = selected - visible + 1;
 
-    // One line per child, name padded/truncated to a fixed 40-char column
-    for (int i = 0; i < node->child_count; i++) {
+    cursor_home();
+
+    // \033[K at the end of each line erases leftovers from the previous frame
+    printf("%s  (%lld bytes)\033[K\n", node->name, node->size);
+    printf("------------------------------------------------------------\033[K\n");
+
+    int end = *scroll + visible;
+    if (end > node->child_count) end = node->child_count;
+
+    for (int i = *scroll; i < end; i++) {
         Node *child = &node->children[i];
 
-        // Add a trailing "/" to folder names so they stand out from files
         char label[300];
         snprintf(label, sizeof(label), "%s%s", child->name, child->is_dir ? "/" : "");
 
-        printf("  %-40.40s %12lld bytes\n", label, child->size);
+        if (i == selected) printf("\033[7m");
+        printf("  %-40.40s %12lld bytes", label, child->size);
+        if (i == selected) printf("\033[0m");
+        printf("\033[K\n");
     }
 
-    printf("------------------------------------------------------------\n");
-    printf("q: quit\n");
+    printf("------------------------------------------------------------\033[K\n");
+    printf("Up/Down: move   Enter: open   q: quit\033[K\n");
+
+    // \033[J erases everything below the last line (old rows from a longer list)
+    printf("\033[J");
+
+    // Push the whole frame to the screen at once
+    fflush(stdout);
 }
