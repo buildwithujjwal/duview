@@ -8,6 +8,24 @@ static void cursor_home(void) {
     printf("\033[H");
 }
 
+// Converts a byte count into a short readable string, e.g. "4.6 MB".
+// The caller supplies the buffer, so we never malloc here.
+static void format_size(long long bytes, char *buf, size_t buf_size) {
+    const char *units[] = {"B", "KB", "MB", "GB", "TB"};
+    double value = (double)bytes;
+    int unit = 0;
+
+    // Divide by 1024 until the number is small enough to read
+    while (value >= 1024.0 && unit < 4) {
+        value /= 1024.0;
+        unit++;
+    }
+
+    // Plain bytes have no fraction, so print them as an integer
+    if (unit == 0) snprintf(buf, buf_size, "%lld B", bytes);
+    else           snprintf(buf, buf_size, "%.1f %s", value, units[unit]);
+}
+
 void render(Node *node, int selected, int *scroll) {
     int visible = get_terminal_rows() - 5;
     if (visible < 1) visible = 1;
@@ -17,8 +35,9 @@ void render(Node *node, int selected, int *scroll) {
 
     cursor_home();
 
-    // \033[K at the end of each line erases leftovers from the previous frame
-    printf("%s  (%lld bytes)\033[K\n", node->name, node->size);
+        char total[32];
+    format_size(node->size, total, sizeof(total));
+    printf("%s  (%s)\033[K\n", node->name, total);
     printf("------------------------------------------------------------\033[K\n");
 
     int end = *scroll + visible;
@@ -31,7 +50,11 @@ void render(Node *node, int selected, int *scroll) {
         snprintf(label, sizeof(label), "%s%s", child->name, child->is_dir ? "/" : "");
 
         if (i == selected) printf("\033[7m");
-        printf("  %-40.40s %12lld bytes", label, child->size);
+
+        char size_text[32];
+        format_size(child->size, size_text, sizeof(size_text));
+        printf("  %-40.40s %10s", label, size_text);
+
         if (i == selected) printf("\033[0m");
         printf("\033[K\n");
     }
