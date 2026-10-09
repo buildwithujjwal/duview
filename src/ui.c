@@ -26,7 +26,7 @@ static void format_size(long long bytes, char *buf, size_t buf_size) {
     else           snprintf(buf, buf_size, "%.1f %s", value, units[unit]);
 }
 
-void render(Node *node, int selected, int *scroll) {
+void render(Node *node, const char *path, int selected, int *scroll) {
     int visible = get_terminal_rows() - 5;
     if (visible < 1) visible = 1;
 
@@ -37,7 +37,7 @@ void render(Node *node, int selected, int *scroll) {
 
         char total[32];
     format_size(node->size, total, sizeof(total));
-    printf("%s  (%s)\033[K\n", node->name, total);
+    printf("%s  (%s)\033[K\n", path, total);
     printf("------------------------------------------------------------\033[K\n");
 
     int end = *scroll + visible;
@@ -60,7 +60,7 @@ void render(Node *node, int selected, int *scroll) {
     }
 
     printf("------------------------------------------------------------\033[K\n");
-    printf("Up/Down: move   Enter: open   Backspace: back   q: quit\033[K\n");
+    printf("Up/Down: move   Enter: open   Backspace: back   q: quit\033[K");
 
     // \033[J erases everything below the last line (old rows from a longer list)
     printf("\033[J");
