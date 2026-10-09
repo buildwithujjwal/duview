@@ -37,7 +37,7 @@ void render(Node *node, int selected, int *scroll) {
     }
 
     printf("------------------------------------------------------------\033[K\n");
-    printf("Up/Down: move   Enter: open   q: quit\033[K\n");
+    printf("Up/Down: move   Enter: open   Backspace: back   q: quit\033[K\n");
 
     // \033[J erases everything below the last line (old rows from a longer list)
     printf("\033[J");
