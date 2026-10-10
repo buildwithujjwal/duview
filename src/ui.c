@@ -65,11 +65,13 @@ void render(Node *node, const char *path, int selected, int *scroll) {
         printf(COLOR_RESET "\033[K\n");
     }
 
+    // Nothing to list: tell the user instead of showing a blank area
+    if (node->child_count == 0) {
+        printf("  (empty folder)\033[K\n");
+    }
+
     printf("------------------------------------------------------------\033[K\n");
     printf("Up/Down: move   Enter: open   Backspace: back   q: quit\033[K");
-
-    // \033[J erases everything below the last line (old rows from a longer list)
-    printf("\033[J");
 
     // Push the whole frame to the screen at once
     fflush(stdout);

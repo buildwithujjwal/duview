@@ -86,7 +86,8 @@ int main(int argc, char *argv[]) {
     } while (key != KEY_QUIT);
 
     // Leave the alternate screen: the user's terminal comes back untouched
-    printf("\033[?1049l");
+        // Leave the alternate screen and reset any leftover styles
+    printf("\033[0m\033[?1049l");
     fflush(stdout);
 
     free_tree(&root);
