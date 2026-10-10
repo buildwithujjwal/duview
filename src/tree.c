@@ -4,6 +4,7 @@
 #include <dirent.h>   // Directory handling functions and structures
 #include <sys/stat.h> // stat() and struct stat for file metadata
 #include "tree.h"     // declarations: struct Node and function signatures
+#include <direct.h>    // rmdir() - remove an empty directory (Windows)
 
 // Recursively builds a tree node for the given path, including all nested children if it's a directory
 Node build_tree(const char *path, const char *name) {
@@ -17,17 +18,17 @@ Node build_tree(const char *path, const char *name) {
     if (stat(path, &info) != 0) {
         node.size = 0;
         node.is_dir = 0;
-        return node;
+        return node;    
     }
 
-    // it's a plain file: no children, size comes straight from stat
+    // it's a plain file: no children
     if (!S_ISDIR(info.st_mode)) {
         node.is_dir = 0;
         node.size = info.st_size;
         return node;
     }
 
-    // it's a directory: open it and build a child node fo revery entry
+    // it's a directory: open it and build a child node for every entry
     node.is_dir = 1;
     node.size = 0;
 
@@ -36,7 +37,7 @@ Node build_tree(const char *path, const char *name) {
         return node;
     }
 
-    // First count how many real entries there are ( exluding . and ..);
+    // First count how many real entries there are ( excluding . and ..);
     struct dirent *entry;
     int count = 0;
     while((entry = readdir(dir)) != NULL) {
@@ -82,6 +83,43 @@ void print_tree(Node *node, int depth) {
     for (int i = 0; i < node->child_count; i++) {
         print_tree(&node->children[i], depth + 1);
     }
+}
+
+int delete_path(const char *path) {
+    struct stat info;
+    if (stat(path, &info) != 0) return -1;
+
+    // Plain file: base case, just remove it
+    if (!S_ISDIR(info.st_mode)) return remove(path);
+
+    DIR *dir = opendir(path);
+    if (dir == NULL) return -1;
+
+    // Delete everything inside first, remembering if anything failed
+    int result = 0;
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+
+        char full_path[1300];
+        snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
+        if (delete_path(full_path) != 0) result = -1;
+    }
+    closedir(dir);
+
+    // Only remove the folder itself if it is now empty
+    if (result != 0) return -1;
+    return rmdir(path);
+}
+
+void remove_child(Node *parent, int index) {
+    free_tree(&parent->children[index]);  // free the removed node's subtree
+
+    // Shift later entries left to close the gap (keeps the sort order)
+    for (int i = index; i < parent->child_count - 1; i++) {
+        parent->children[i] = parent->children[i + 1];
+    }
+    parent->child_count--;
 }
 
 

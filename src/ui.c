@@ -71,7 +71,8 @@ void render(Node *node, const char *path, int selected, int *scroll) {
     }
 
     printf("------------------------------------------------------------\033[K\n");
-    printf("Up/Down: move   Enter: open   Backspace: back   q: quit\033[K");
+    printf("Up/Down: move   Enter: open   Backspace: back   d: delete   q: quit");
+    printf("\033[J");
 
     // Push the whole frame to the screen at once
     fflush(stdout);

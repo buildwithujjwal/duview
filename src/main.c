@@ -83,6 +83,35 @@ int main(int argc, char *argv[]) {
             selected = history[depth].selected;
             scroll = history[depth].scroll;
         }
+
+        // d: delete the highlighted entry, after confirmation
+        if ((key == 'd' || key == 'D') && current->child_count > 0) {
+            Node *target = &current->children[selected];
+
+            char full_path[1300];
+            snprintf(full_path, sizeof(full_path), "%s/%s", path_text, target->name);
+
+            // Prompt goes on the spare row under the footer
+            printf("\r\n\033[KDelete %s permanently? (y/n) ", full_path);
+            fflush(stdout);
+
+            if (read_key() == 'y') {
+                long long freed = target->size;
+
+                if (delete_path(full_path) == 0) {
+                    // Fix totals: current folder and every folder above it
+                    current->size -= freed;
+                    for (int i = 0; i < depth; i++) history[i].folder->size -= freed;
+
+                    remove_child(current, selected);
+
+                    // Keep the cursor inside the shrunken list
+                    if (selected >= current->child_count) selected = current->child_count - 1;
+                    if (selected < 0) selected = 0;
+                }
+            }
+        }
+
     } while (key != KEY_QUIT);
 
     // Leave the alternate screen: the user's terminal comes back untouched
