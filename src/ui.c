@@ -2,6 +2,11 @@
 #include "ui.h"
 #include "terminal.h"
 
+// ANSI style codes. Named so the render code reads clearly.
+#define COLOR_DIR    "\033[1;36m"  // bold cyan: folders
+#define COLOR_RESET  "\033[0m"     // back to default style
+#define STYLE_SELECT "\033[7m"     // reverse video: selected row
+
 // Moves the cursor to the top-left without blanking the screen.
 // Drawing over the old frame avoids the flicker a full clear causes.
 static void cursor_home(void) {
@@ -49,14 +54,15 @@ void render(Node *node, const char *path, int selected, int *scroll) {
         char label[300];
         snprintf(label, sizeof(label), "%s%s", child->name, child->is_dir ? "/" : "");
 
-        if (i == selected) printf("\033[7m");
-
         char size_text[32];
         format_size(child->size, size_text, sizeof(size_text));
-        printf("  %-40.40s %10s", label, size_text);
 
-        if (i == selected) printf("\033[0m");
-        printf("\033[K\n");
+
+        // Order matters: color first, then highlight, then the text
+        if (child->is_dir) printf(COLOR_DIR);
+        if (i == selected) printf(STYLE_SELECT);
+        printf("  %-40.40s %10s", label, size_text);
+        printf(COLOR_RESET "\033[K\n");
     }
 
     printf("------------------------------------------------------------\033[K\n");
