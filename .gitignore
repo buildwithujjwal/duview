@@ -1,19 +1,11 @@
-# Compiled binaries
+# Compiled binaries and object files
 *.exe
-list_dir
-get_metadata
-list_entries
-
-# Build artifacts
 *.o
+*.obj
 *.out
 
-# Local learning/reference code - not part of the project
-learning/
-
-# OS/editor junk
+# OS and editor junk
 .vscode/
-
-build/
-error.txt
-duview_test*
+.vs/
+.DS_Store
+Thumbs.db
