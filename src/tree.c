@@ -5,6 +5,7 @@
 #include <sys/stat.h> // stat() and struct stat for file metadata
 #include "tree.h"     // declarations: struct Node and function signatures
 #include <direct.h>    // rmdir() - remove an empty directory (Windows)
+#include <io.h>
 
 // Recursively builds a tree node for the given path, including all nested children if it's a directory
 Node build_tree(const char *path, const char *name) {
@@ -89,8 +90,11 @@ int delete_path(const char *path) {
     struct stat info;
     if (stat(path, &info) != 0) return -1;
 
-    // Plain file: base case, just remove it
-    if (!S_ISDIR(info.st_mode)) return remove(path);
+    // Plain file: base case. Clear the read-only flag first, because Windows refuses to delete read-only files (git marks some).
+    if (!S_ISDIR(info.st_mode)) {
+        chmod(path, S_IREAD | S_IWRITE);
+        return remove(path);
+    }
 
     DIR *dir = opendir(path);
     if (dir == NULL) return -1;

@@ -109,6 +109,11 @@ int main(int argc, char *argv[]) {
                     if (selected >= current->child_count) selected = current->child_count - 1;
                     if (selected < 0) selected = 0;
                 }
+                else {
+                    printf("\r\n\033[KCould not delete (read-only, in use or no permission). Press any key.");
+                    fflush(stdout);
+                    read_key();
+                }
             }
         }
 
