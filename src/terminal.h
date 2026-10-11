@@ -7,6 +7,9 @@ void enable_ansi_support(void);
 // Reads one keypress and returns a simple code identifying it. Handles regular keys directly; arrow keys are detected and translated into easy-to-check constants.
 int read_key(void);
 
+// Returns how many text rows the console window currently shows.
+int get_terminal_rows(void);
+
 // key codes returned by read_key() for special keys
 #define KEY_UP     1000
 #define KEY_DOWN   1002

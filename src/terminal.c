@@ -27,3 +27,13 @@ int read_key(void) {
 
     return ch; // any regular character key
 }
+
+int get_terminal_rows(void) {
+    CONSOLE_SCREEN_BUFFER_INFO info;
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    // If the query fails, fall back to a common default height
+    if (!GetConsoleScreenBufferInfo(console, &info)) return 24;
+
+    return info.srWindow.Bottom - info.srWindow.Top + 1;
+}

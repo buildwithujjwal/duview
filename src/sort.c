@@ -6,8 +6,8 @@ static int compare_by_size_desc(const void *a, const void *b) {
     const Node *node_a = (const Node *)a;
     const Node *node_b = (const Node *)b;
 
-    if (node_b->size > node_a->size) return 1;
-    if (node_b->size < node_a->size) return -1;
+    if (node_a->size > node_b->size) return -1;
+    if (node_a->size < node_b->size) return 1;
     return 0;
 }
 
